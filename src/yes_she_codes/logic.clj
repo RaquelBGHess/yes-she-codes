@@ -1,15 +1,19 @@
 (ns yes-she-codes.logic)
+(require 'java-time)
 
 (defn novo-cliente
   [nome cpf email]
-  [:nome nome
-   :cpf cpf
-   :email email])
+  {:nome  nome
+   :cpf   cpf
+   :email email})
+
+(defn str->Long [valor]
+  (Long/parseLong (clojure.string/replace valor #" " "")))
 
 (defn novo-cartao
   [numero cvv validade limite cliente]
-  {:numero   (Long/parseLong numero)
-   :cvv      (Long/parseLong cvv)
+  {:numero   (str->Long numero)
+   :cvv      (str->Long cvv)
    :validade validade
    :limite   (bigdec limite)
    :cliente  cliente})
@@ -20,7 +24,7 @@
    :valor           (bigdec valor)
    :estabelecimento estabelecimento
    :categoria       categoria
-   :cartao          (Long/parseLong cartao)})
+   :cartao          (str->Long cartao)})
 
 (defn lista-clientes [registros]
   (vec (map (fn [[nome cpf email]]
