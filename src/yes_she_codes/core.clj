@@ -31,7 +31,7 @@
    ["2022-04-10" "130.00" "Drogaria" "Saúde" "6655 6655 6655 6655"]
    ["2022-03-10" "100.00" "Show de pagode" "Lazer" "3939 3939 3939 3939"]
    ["2022-03-11" "25.90" "Dogão" "Alimentação" "3939 3939 3939 3939"]
-   ["2022-03-12" "215.87" "Praia" "Lazer" "3939" " 3939 3939 3939"]
+   ["2022-03-12" "215.87" "Praia" "Lazer" "3939" "3939 3939 3939"]
    ["2022-04-01" "976.88" "Oficina" "Automóvel" "3939 3939 3939 3939"]
    ["2022-04-10" "85.00" "Alura" "Educação" "3939 3939 3939 3939"]]
   )
@@ -45,11 +45,18 @@
 (println cartoes)
 (println compras)
 
-(println (y.logic/total-gasto compras))
+(println "total-gasto:" (y.logic/total-gasto compras))
 
-(println (y.logic/compras-do-mes 02 compras))
+(println "compras-do-mes:" (y.logic/compras-do-mes 02 compras))
 
-(println (y.logic/total-gasto-no-mes compras 02 1234123412341234))
+(println "total-gasto-no-mes:" (y.logic/total-gasto-no-mes compras "01" "1234 1234 1234 1234"))
 
-(println (y.logic/lista-de-compras-por-estabelecimento "Outback" compras))
-(println (y.logic/lista-de-compras-por-estabelecimento "Alura" compras))
+(println "lista-de-compras-por-estabelecimento:" (y.logic/lista-de-compras-por-estabelecimento "Outback" compras))
+
+(println "lista-de-compras-por-estabelecimento:" (y.logic/lista-de-compras-por-estabelecimento "Alura" compras))
+
+(println "compras-no-intevalo-de-precos:" (y.logic/compras-no-intevalo-de-precos 20.4 200.0 compras))
+
+;(println "compras-no-intevalo-de-precos2:" (y.logic/compras-no-intevalo-de-precos2 20.4 200.0 compras))
+
+(println "total-de-gastos-por-categoria:" (y.logic/total-de-gastos-por-categoria compras))

@@ -1,5 +1,6 @@
 (ns yes-she-codes.logic)
 (require 'java-time)
+(require `clojure.spec.alpha)
 
 (defn novo-cliente
   [nome cpf email]
@@ -8,7 +9,10 @@
    :email email})
 
 (defn str->Long [valor]
-  (Long/parseLong (clojure.string/replace valor #" " "")))
+  (clojure.string/replace valor #" " ""))
+
+(defn str->date [valor]
+  (java-time/local-date "yyyy-MM-dd" valor))
 
 (defn novo-cartao
   [numero cvv validade limite cliente]
@@ -20,7 +24,7 @@
 
 (defn nova-compra
   [data valor estabelecimento categoria cartao]
-  {:data            (java-time/local-date "yyyy-MM-dd" data)
+  {:data            (str->date data)
    :valor           (bigdec valor)
    :estabelecimento estabelecimento
    :categoria       categoria
@@ -43,7 +47,7 @@
 
 (defn total-gasto
   [compras]
-  (reduce + (map (fn [compra] (:valor compra)) compras)))
+  (reduce + (map :valor compras)))
 
 (defn mes-da-data [data]
   (.getValue (java-time/month data)))
@@ -59,3 +63,19 @@
 (defn lista-de-compras-por-estabelecimento
   [estabelecimento lista-de-compras]
   (filter #(= estabelecimento (:estabelecimento %)) lista-de-compras))
+
+(defn compras-no-intevalo-de-precos
+  [valor-minimo valor-maximo lista-de-compras]
+  (filter #(and
+             (>= (:valor %) valor-minimo)
+             (<= (:valor %) valor-maximo))
+          lista-de-compras))
+
+(defn total-de-gastos-por-categoria
+  [lista-de-compras]
+    (map
+      (fn [[categoria compras-da-categoria]]
+        {:categoria                categoria
+         :gasto-total-da-categoria (total-gasto compras-da-categoria)})
+      (group-by :categoria lista-de-compras)))
+
