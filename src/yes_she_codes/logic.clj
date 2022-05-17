@@ -1,6 +1,5 @@
 (ns yes-she-codes.logic)
-(require 'java-time)
-(require `clojure.spec.alpha)
+(use 'java-time)
 
 (defn novo-cliente
   [nome cpf email]
@@ -11,7 +10,7 @@
 (defn str->Long [valor]
   (clojure.string/replace valor #" " ""))
 
-(defn str->date [valor]
+(defn str->data [valor]
   (java-time/local-date "yyyy-MM-dd" valor))
 
 (defn novo-cartao
@@ -24,58 +23,68 @@
 
 (defn nova-compra
   [data valor estabelecimento categoria cartao]
-  {:data            (str->date data)
+  {:data            (str->data data)
    :valor           (bigdec valor)
    :estabelecimento estabelecimento
    :categoria       categoria
    :cartao          (str->Long cartao)})
 
-(defn lista-clientes [registros]
-  (vec (map (fn [[nome cpf email]]
-              (novo-cliente nome, cpf, email))
-            registros)))
+(defn processa-csv [caminho-arquivo funcao-mapeamento]
+  (->> (slurp caminho-arquivo)
+       clojure.string/split-lines
+       rest
+       (map #(clojure.string/split % #","))
+       (mapv funcao-mapeamento)))
 
-(defn lista-cartoes [registros]
-  (vec (map (fn [[numero cvv validade limite cliente]]
-              (novo-cartao numero, cvv, validade, limite, cliente))
-            registros)))
+(defn lista-clientes []
+  (processa-csv "dados/clientes.csv" (fn [[nome cpf email]]
+                                       (novo-cliente nome cpf email))))
 
-(defn lista-compras [registros]
-  (vec (map (fn [[data valor estabelecimento categoria cartao]]
-              (nova-compra data, valor, estabelecimento, categoria, cartao))
-            registros)))
+(defn lista-cartoes []
+  (processa-csv "dados/cartoes.csv" (fn [[numero cvv validade limite cliente]]
+                                      (novo-cartao numero cvv validade limite cliente))))
+
+(defn lista-compras []
+  (processa-csv "dados/compras.csv" (fn [[data valor estabelecimento categoria cartao]]
+                                      (nova-compra data valor estabelecimento categoria cartao))))
+
+(defn filtra-compras [predicado compras]
+  (vec (filter predicado compras)))
+
+(defn mes-da-data [data]
+  (.getValue (java-time/month data)))
+
+(defn filtra-compras-do-mes
+  [mes compras]
+  (filtra-compras #(= mes (mes-da-data (:data %)))
+                  compras))
+
+(defn filtra-compras-do-estabelecimento
+  [estabelecimento compras]
+  (filtra-compras #(= estabelecimento (:estabelecimento %))
+                  compras))
 
 (defn total-gasto
   [compras]
   (reduce + (map :valor compras)))
 
-(defn mes-da-data [data]
-  (.getValue (java-time/month data)))
-
-(defn compras-do-mes
-  [mes lista-de-compras]
-  (filter #(= (mes-da-data (:data %)) mes) lista-de-compras))
-
 (defn total-gasto-no-mes
-  [compras mes cartao]
-  (total-gasto (filter #(= cartao (:cartao %)) (compras-do-mes mes compras))))
+  [mes compras]
+  (total-gasto (filtra-compras-do-mes mes compras)))
 
-(defn lista-de-compras-por-estabelecimento
-  [estabelecimento lista-de-compras]
-  (filter #(= estabelecimento (:estabelecimento %)) lista-de-compras))
+(def total-gasto-no-mes-com-composition (comp total-gasto filtra-compras-do-mes))
 
 (defn compras-no-intevalo-de-precos
-  [valor-minimo valor-maximo lista-de-compras]
+  [valor-minimo valor-maximo compras]
   (filter #(and
              (>= (:valor %) valor-minimo)
              (<= (:valor %) valor-maximo))
-          lista-de-compras))
+          compras))
 
 (defn total-de-gastos-por-categoria
-  [lista-de-compras]
+  [compras]
     (map
       (fn [[categoria compras-da-categoria]]
         {:categoria                categoria
          :gasto-total-da-categoria (total-gasto compras-da-categoria)})
-      (group-by :categoria lista-de-compras)))
-
+      (group-by :categoria compras)))
