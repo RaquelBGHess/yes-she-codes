@@ -1,6 +1,6 @@
 (ns yes-she-codes.core-test
   (:require [clojure.test :refer :all]
-            [yes-she-codes.core :refer :all]))
+            [yes-she-codes.Simulação :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
