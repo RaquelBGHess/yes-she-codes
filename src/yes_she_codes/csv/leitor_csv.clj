@@ -1,5 +1,5 @@
 (ns yes-she-codes.csv.leitor-csv
-  (:require [java-time :as time]
+  (:require [java-time :as t]
             [yes-she-codes.util :as y.util]
             [yes-she-codes.dominio.compra :as y.compra]
             [yes-she-codes.dominio.cliente :as y.cliente]
@@ -16,11 +16,11 @@
 
 (def csv->cartao [y.util/str->long
                   y.util/str->long
-                  time/year-month
+                  t/year-month
                   bigdec
                   identity])
 
-(def csv->compra [time/local-date
+(def csv->compra [t/local-date
                   bigdec
                   identity
                   identity
